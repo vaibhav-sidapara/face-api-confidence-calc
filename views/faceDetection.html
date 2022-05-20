@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Beauty Score</title>
+
+    <script src="face-api.js"></script>
+    <script src="js/commons.js"></script>
+    <script src="js/faceDetectionControls.js"></script>
+    <script src="js/imageSelectionControls.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.css">
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
+</head>
+<body>
+
+<div class="center-content page-container">
+
+    <div class="preloader-wrapper active" id="loader">
+        <div class="spinner-layer spinner-red-only">
+            <div class="circle-clipper left">
+                <div class="circle"></div>
+            </div>
+            <div class="gap-patch">
+                <div class="circle"></div>
+            </div>
+            <div class="circle-clipper right">
+                <div class="circle"></div>
+            </div>
+        </div>
+    </div>
+
+    <div style="position: relative" class="margin">
+        <img id="inputImg" src="" style="max-width: 800px;" alt=""/>
+        <canvas id="overlay"></canvas>
+    </div>
+
+    <div class="row side-by-side">
+        <!-- image_selection_control -->
+        <div id="selectList"></div>
+        <div class="row">
+            <label for="imgUrlInput">Get image from URL:</label>
+            <input id="imgUrlInput" type="text" class="bold">
+        </div>
+        <button class="waves-effect waves-light btn" onclick="loadImageFromUrl()">Ok</button>
+        <input id="queryImgUploadInput" type="file" class="waves-effect btn bold" onchange="loadImageFromUpload()" accept=".jpg, .jpeg, .png">
+        <!-- image_selection_control -->
+    </div>
+</div>
+
+<script>
+  async function updateResults() {
+    if (!isFaceDetectionModelLoaded()) {
+      return
+    }
+
+    const inputImgEl = $('#inputImg').get(0)
+    const options = getFaceDetectorOptions()
+
+    const results = await faceapi.detectAllFaces(inputImgEl, options)
+    console.log(results);
+
+    const canvas = $('#overlay').get(0)
+    faceapi.matchDimensions(canvas, inputImgEl)
+    faceapi.draw.drawDetections(canvas, faceapi.resizeResults(results, inputImgEl))
+  }
+
+  async function run() {
+    // load face detection
+    await changeFaceDetector(SSD_MOBILENETV1)
+
+    // start processing image
+    updateResults()
+  }
+
+  $(document).ready(function () {
+    initImageSelectionControls()
+    initFaceDetectionControls()
+    run()
+  })
+</script>
+</body>
+</html>
